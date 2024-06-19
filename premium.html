@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Helvetica', sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      position: relative; /* Добавляем позиционирование */
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #e0e0e0;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #ff5722;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #e64a19;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #payment-message {
+      margin-top: 20px;
+      color: #ff5722;
+      font-size: 14px;
+    }
+
+    /* Стили для скрытого текста */
+    .hidden-text {
+      font-size: 1.9em; /* Очень маленький размер текста */
+      color: rgba(224, 224, 224, 0.1); /* Почти прозрачный текст */
+      position: absolute; /* Позиционирование вне потока документа */
+      bottom: 10px; /* Снизу страницы */
+      right: 10px; /* Справа страницы */
+    }
+
+    .hidden-text a {
+      text-decoration: none;
+      color: #9e9e9e; /* Серый цвет */
+      font-size: 14px;
+    }
+
+    .hidden-text a:hover {
+      color: #bdbdbd; /* Светло-серый при наведении */
+    }
+  </style>
+  <title>Оплата премиум подписки</title>
+  <script src="https://widget.tezro.com/v1/checkout.js"></script>
+</head>
+
+<body>
+  <div class="container payment-container">
+    <h1>Оформление премиум подписки</h1>
+    <form id="payment-form">
+      <div id="card-element">
+        <!-- Stripe Element для ввода данных карты -->
+      </div>
+      <button id="submit">Оплатить</button>
+      <div id="payment-message" class="hidden"></div>
+      <div class="hidden-text">
+        <a href="index.html">Выйти</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit');
+    const paymentMessage = document.getElementById('payment-message');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      submitButton.disabled = true;
+
+      // Здесь вызывается Tezro для обработки платежа
+      try {
+        const response = await window.TezroCheckout.open({
+          amount: 399, // сумма платежа в валюте в минимальных единицах (например, копейках)
+          currency: 'KGS', // валюта платежа
+          external_id: '123456', // внешний ID платежа (может быть ID заказа или что-то подобное)
+          description: 'Оплата премиум подписки', // описание платежа
+          customer_email: 'user@example.com', // email покупателя (опционально)
+          language: 'ru', // язык интерфейса платежной формы
+          redirect_url: 'https://example.com/success', // URL для перенаправления после успешной оплаты
+          webhook_url: 'https://example.com/webhook', // URL для получения уведомлений о статусе платежа
+        });
+
+        if (response.success) {
+          paymentMessage.textContent = 'Оплата прошла успешно!';
+          paymentMessage.classList.remove('hidden');
+          window.location.href = 'premium-success.html'; // Перенаправление на страницу успешной оплаты
+        } else {
+          paymentMessage.textContent = `Ошибка: ${response.error}`;
+          paymentMessage.classList.remove('hidden');
+          submitButton.disabled = false;
+        }
+      } catch (error) {
+        paymentMessage.textContent = `Ошибка: ${error.message}`;
+        paymentMessage.classList.remove('hidden');
+        submitButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+
+</html>
